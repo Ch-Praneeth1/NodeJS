@@ -27,6 +27,7 @@ const server = http.createServer((req,res) => {
         .replace("**rating**",products[productId].rating)
         .replace("**url**",products[productId].thumbnail);
         res.end(modifiedIndex);
+        return;
     }
 
     switch(req.url){
