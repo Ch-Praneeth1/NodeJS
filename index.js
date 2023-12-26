@@ -57,6 +57,8 @@ const express = require('express');
 
 //bodyParser
 const server = express();
+server.use(morgan('defualt'));
+server.use(express.static('public'));
 
 server.use(express.json());
 //universal middleware
