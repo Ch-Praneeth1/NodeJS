@@ -1,107 +1,82 @@
-// const http = require('http');
 const fs = require('fs');
-
-
-
-// const index =fs.readFileSync('index.html','utf-8');
 const data = JSON.parse(fs.readFileSync('dummy.json', 'utf-8'));
 const products = data.products;
-
-
-// // const index2 = index.JSON()
-// // console.log(product)
-
-
-// const server = http.createServer((req,res) => {
-//     console.log("server started")
-
-//     // const params = req.url.split('/')
-//     // console.log(params)
-
-//     if(req.url.startsWith('/product')){
-//         const params = req.url.split('/')
-//         console.log(params)
-//         const productId = params[2]
-//         res.setHeader("content-type","text/html");
-//         let modifiedIndex = index.replace("**title**",products[productId].title)
-//         .replace("**price**",products[productId].price)
-//         .replace("**rating**",products[productId].rating)
-//         .replace("**url**",products[productId].thumbnail);
-//         res.end(modifiedIndex);
-//         return;
-//     }
-
-//     switch(req.url){
-//         case '/':
-//             res.setHeader("content-type","text/html");
-//             res.end(index);
-//             break;
-//         case '/api':
-//             res.setHeader("content-type","application/json");
-//             res.end(JSON.stringify(data));
-//             break;
-//         default:
-//             break;
-//     }
-// });
-
-// server.listen(8088)
-
-
-
-
-
-
 const express = require('express');
+const morgan = require('morgan');
+const { send } = require('process');
 
 
-//bodyParser
+
 const server = express();
 
+//body parser
 server.use(express.json());
-//universal middleware
-// server.use('/',(req,res,next) => {
-//     console.log('universal middleware')
-//     console.log(req.method, req.ip ,req.hostname, new Date() , req.get('user-agent'))   // Universal middleware can be used for whole application such as user login can be done
-//     next()                                          // trought middleware authorized users can be alloweed and others cannot   
-// })
+server.use(morgan('defualt'));
+server.use(express.static('public'));
 
 
 
-//rout middleware       specified for some perticular routs we need
-const auth = (req,res,next) => {
-    console.log("authentication middleware")
-    if(req.body.password=='123'){
-        console.log("user is authorized")
-        next()
-    }else{
-        console.log("user is not authorized")
-        res.sendStatus(401);
-    }
-}
+// C R U D   create read  update delete
 
-server.get('/',auth,(req,res)=>{
-    res.send("<h1>hello world get</h1>")
-    // res.sendFile('C:/Users/chpra/Desktop/NodeApp/index.html')
-    // res.json(products)
+
+//create  post 
+server.post('/products',(req,res)=>{
+    const product = req.body
+    products.push(product)
+    res.send(products)
+})
+
+//read  GET  /products
+server.get('/products',(req,res)=>{
+    res.send(products)
+});
+
+//read  GET  /products/id
+
+server.get('/products/:id',(req,res) => {
+    const id = +req.params.id
+    // console.log(id)
+    const product = products.find(p =>p.id===id )
+    // console.log(product)
+    res.send(product)
+});
+
+//update PUT /products/id                    put detlets the whole thing and replace it with the new info we sent
+server.put('/products/:id',(req,res)=>{
+    const id = +req.params.id
+    const productIndex = products.findIndex(p => p.id===id)
+    products.splice(productIndex,1,{...req.body, id:id})
+    // console.log(productIndex)
+    // res.send(products[productIndex])
+    res.send(products)
+})
+
+//update PATCH /products/id               patch replaces the value for what we sent and other values remains the same 
+server.patch('/products/:id',(req,res)=>{
+    const id = +req.params.id;
+    const productIndex = products.findIndex(p => p.id===id);
+    const product = products[productIndex];
+    products.splice(productIndex,1,{...product,...req.body})
+    // console.log(productIndex)
+    // res.send(products[productIndex])
+    res.send(products)
 })
 
 
-server.post('/',(req,res)=>{
-    res.send("<h1>hello world post</h1>")
+
+// delete   DELETE    /products/:id
+server.delete('/products/:id',(req,res)=>{
+    // res.send("<h1>hello world delete</h1>")
+    const id = +req.params.id;
+    const productIndex = products.findIndex(p => p.id===id);
+    const product = products[productIndex];
+    products.splice(productIndex,1)
+    res.send(products)
 })
 
-server.delete('/',(req,res)=>{
-    res.send("<h1>hello world delete</h1>")
-})
 
-server.patch('/',(req,res)=>{
-    res.send("<h1>hello world patch</h1>")
-})
 
-server.put('/',(req,res)=>{
-    res.send("<h1>hello world put</h1>")
-})
+
 
 server.listen(8088,() => {
     console.log('server started')
